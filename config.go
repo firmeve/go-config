@@ -1,13 +1,23 @@
 package config
 
 import (
-	"errors"
 	"github.com/go-ini/ini"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
 )
+
+
+//config format error
+type FormatError struct {
+	message string
+	//err error
+}
+
+func (this *FormatError) Error() string {
+	return this.message
+}
 
 type Configurator interface {
 	Get(keys string, defaults ...interface{}) (interface{}, error)
@@ -106,7 +116,7 @@ func (this *Config) Set(keys string, value string) error {
 	length := len(keySlices)
 
 	if length == 1 {
-		return errors.New("error")
+		return &FormatError{message:"Incorrect parameter format"}
 	}
 
 	var err error
