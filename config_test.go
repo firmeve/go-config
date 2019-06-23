@@ -48,6 +48,7 @@ func TestConfig_Set(t *testing.T) {
 	}
 }
 
+// 正常数据测试
 func TestConfig_Get(t *testing.T) {
 	config, err := NewConfig(directory)
 	if err != nil {
@@ -109,6 +110,20 @@ func TestConfig_Get(t *testing.T) {
 	if _,ok := res4.(*ini.Section); !ok {
 		t.Fail()
 	}
+}
+
+// default 非正常数据测试
+func TestConfig_GetDefault(t *testing.T) {
+	config, err := NewConfig(directory)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		t.Fail()
+	}
+
+	// 当一个值的时候，返回ini.File完整对象
+	res := config.GetDefault(`ssss`,`def`)
+
+	assert.Equal(t,`def`,res.(string))
 }
 
 func TestConfig_All(t *testing.T) {

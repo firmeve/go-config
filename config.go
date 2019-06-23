@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-
 //config format error
 type FormatError struct {
 	message string
@@ -20,7 +19,7 @@ func (this *FormatError) Error() string {
 }
 
 type Configurator interface {
-	Get(keys string, defaults ...interface{}) (interface{}, error)
+	Get(keys string) (interface{}, error)
 	Set(key string, value string) error
 	All() map[string]*ini.File
 }
@@ -58,20 +57,15 @@ func NewConfig(directory string) (*Config, error) {
 }
 
 // 获取指定key配置
-func (this *Config) Get(keys string, defaults ...interface{}) (interface{}, error) {
+func (this *Config) Get(keys string) (interface{}, error) {
 
 	keySlices := parseKey(keys, this.delimiter)
-
-	defaultValue := ``
-	if len(defaults) >= 1 {
-		defaultValue = defaults[0].(string)
-	}
 
 	length := len(keySlices)
 
 	var cfg *ini.File
 	if _, ok := this.configs[keySlices[0]]; !ok {
-		return defaultValue, nil
+		return nil, &FormatError{message: `index error`}
 	} else {
 		cfg = this.configs[keySlices[0]]
 	}
@@ -80,7 +74,7 @@ func (this *Config) Get(keys string, defaults ...interface{}) (interface{}, erro
 		return cfg, nil
 	} else if length == 2 {
 		if !cfg.Section(ini.DefaultSection).HasKey(keySlices[1]) {
-			return defaultValue, nil
+			return &FormatError{message: `value not found`}, nil
 		}
 		return cfg.Section(ini.DefaultSection).GetKey(keySlices[1])
 	} else {
@@ -104,8 +98,22 @@ func (this *Config) Get(keys string, defaults ...interface{}) (interface{}, erro
 			return section.GetKey(key)
 		}
 
-		return defaultValue, nil
+		return nil, &FormatError{message: `value not found`}
 	}
+}
+
+func (this *Config) GetDefault(keys string, defaults ...interface{}) interface{} {
+	defaultValue := ``
+	if len(defaults) >= 1 {
+		defaultValue = defaults[0].(string)
+	}
+
+	value, err := this.Get(keys)
+	if err != nil {
+		return defaultValue
+	}
+
+	return value
 }
 
 // 设置配置
@@ -116,7 +124,7 @@ func (this *Config) Set(keys string, value string) error {
 	length := len(keySlices)
 
 	if length == 1 {
-		return &FormatError{message:"Incorrect parameter format"}
+		return &FormatError{message: "incorrect parameter format"}
 	}
 
 	var err error
