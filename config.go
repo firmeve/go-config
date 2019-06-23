@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 //config format error
@@ -24,7 +25,12 @@ type Configurator interface {
 	All() map[string]*ini.File
 }
 
-var config *Config
+var (
+	config *Config
+	//mu sync.Mutex
+	once sync.Once
+)
+
 
 type Config struct {
 	directory string
@@ -45,7 +51,14 @@ func NewConfig(directory string) (*Config, error) {
 		return nil, err
 	}
 
-	config := &Config{directory: directory, delimiter: `.`, extension: `.conf`}
+	// 单例加锁
+	//mu.Lock()
+	//defer mu.Unlock()
+	
+	//直接使用once，其实就是调用mu.Lock和Unlock
+	once.Do(func() {
+		config = &Config{directory: directory, delimiter: `.`, extension: `.conf`}
+	})
 
 	// loadAll
 	err = config.loadAll()

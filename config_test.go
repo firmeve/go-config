@@ -17,6 +17,19 @@ func TestNewConfig(t *testing.T) {
 		t.Fatalf("Config create error. Detail :%s", err.Error())
 	}
 
+	// 单例测试
+	config2 ,err := NewConfig(directory)
+	if err != nil {
+		t.Fatalf("Config create error. Detail :%s", err.Error())
+	}
+
+	fmt.Println(config)
+	fmt.Println(config2)
+
+	if config != config2 {
+		t.Fatalf("Singleton error")
+	}
+
 	fmt.Printf("%T", config)
 }
 
