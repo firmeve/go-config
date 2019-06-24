@@ -14,7 +14,6 @@ var (
 	directory = "./testdata/"
 )
 
-
 func TestNewConfig(t *testing.T) {
 
 	//_, err := NewConfig("-@#/$%")
@@ -125,7 +124,7 @@ func TestConfig_Get(t *testing.T) {
 	if err == nil {
 		t.Fail()
 	} else if v, ok := err.(*FormatError); !ok {
-		fmt.Printf("fail: error is %T",v)
+		fmt.Printf("fail: error is %T", v)
 		t.Fail()
 	}
 
@@ -189,4 +188,63 @@ func TestConfig_Set_Key_Error(t *testing.T) {
 func TestFormatError_Error(t *testing.T) {
 	err := &FormatError{message: "abcdef"}
 	assert.Equal(t, "abcdef", err.Error())
+}
+
+// ======================== Example ======================
+
+func ExampleConfig_Set() {
+	config, err := NewConfig(directory)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	err = config.Set("test.a.b.c", "1")
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+func ExampleConfig_Get() {
+	config, err := NewConfig(directory)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	value, err := config.Get("app.x")
+	if err != nil {
+		panic(err.Error())
+	}
+	fmt.Println(value.(*ini.Key).Value())
+
+	// Output:
+	// x
+}
+
+func ExampleConfig_GetDefault() {
+	config, err := NewConfig(directory)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	value1 := config.GetDefault("app.zzzz", `def`)
+	value2 := config.GetDefault("app.t_key", `def2`)
+
+	fmt.Println(value1,value2)
+
+	// Output:
+	// def t_value
+}
+
+func ExampleConfig_All() {
+	config, err := NewConfig(directory)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	configs := config.All()
+
+	fmt.Printf("%T",configs)
+
+	// Output:
+	// map[string]*ini.File
 }
