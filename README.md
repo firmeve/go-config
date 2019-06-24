@@ -8,6 +8,11 @@ Configuration package that supports multi-level dot syntax read write
 
 ## Basic usage
 
+### Install
+```go
+go get -u github.com/firmeve/go-config
+```
+
 ### Instantiation
 ```go
 config, err := NewConfig(directory)
