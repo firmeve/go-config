@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/firmeve/go-config.svg?branch=master)](https://travis-ci.com/firmeve/go-config)
 [![Coverage Status](https://coveralls.io/repos/github/firmeve/go-config/badge.svg?branch=master)](https://coveralls.io/github/firmeve/go-config?branch=master)
+[![GitHub license](https://img.shields.io/github/license/firmeve/go-config.svg)](https://github.com/firmeve/go-config/blob/master/LICENSE)
 
 Configuration package that supports multi-level dot syntax read write
 
