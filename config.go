@@ -31,7 +31,6 @@ var (
 	once sync.Once
 )
 
-
 type Config struct {
 	directory string
 	configs   map[string]*ini.File
@@ -46,7 +45,7 @@ func NewConfig(directory string) (*Config, error) {
 		return config, nil
 	}
 
-	directory, err := filepath.Abs(directory)
+	directory, err := absPath(directory)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +53,7 @@ func NewConfig(directory string) (*Config, error) {
 	// 单例加锁
 	//mu.Lock()
 	//defer mu.Unlock()
-	
+
 	//直接使用once，其实就是调用mu.Lock和Unlock
 	once.Do(func() {
 		config = &Config{directory: directory, delimiter: `.`, extension: `.conf`}
@@ -67,6 +66,11 @@ func NewConfig(directory string) (*Config, error) {
 	}
 
 	return config, nil
+}
+
+// 获取指定目录的绝对路径
+func absPath(directory string) (string, error) {
+	return filepath.Abs(directory)
 }
 
 // 获取指定key配置
@@ -87,7 +91,7 @@ func (this *Config) Get(keys string) (interface{}, error) {
 		return cfg, nil
 	} else if length == 2 {
 		if !cfg.Section(ini.DefaultSection).HasKey(keySlices[1]) {
-			return &FormatError{message: `value not found`}, nil
+			return nil, &FormatError{message: `value not found`}
 		}
 		return cfg.Section(ini.DefaultSection).GetKey(keySlices[1])
 	} else {

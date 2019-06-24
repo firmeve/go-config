@@ -4,21 +4,33 @@ import (
 	"fmt"
 	"github.com/go-ini/ini"
 	"github.com/stretchr/testify/assert"
+	"math/rand"
+	"strconv"
 	"testing"
+	"time"
 )
 
 var (
 	directory = "./testdata/"
 )
 
+
 func TestNewConfig(t *testing.T) {
+
+	//_, err := NewConfig("-@#/$%")
+	//if err == nil {
+	//	t.Fatal("Error path")
+	//}
+	//
+	//fmt.Println(err.Error())
+
 	config, err := NewConfig(directory)
 	if err != nil {
 		t.Fatalf("Config create error. Detail :%s", err.Error())
 	}
 
 	// 单例测试
-	config2 ,err := NewConfig(directory)
+	config2, err := NewConfig(directory)
 	if err != nil {
 		t.Fatalf("Config create error. Detail :%s", err.Error())
 	}
@@ -43,6 +55,7 @@ func TestConfig_Set(t *testing.T) {
 		{"app", "s1.x", "s1x"},
 		{"app", "s1.z.y", "s1xy"},
 		{"new", "x", "x"},
+		{strconv.Itoa(rand.New(rand.NewSource(time.Now().UnixNano())).Int()), "x", "x"},
 	}
 
 	config, err := NewConfig(directory)
@@ -102,25 +115,34 @@ func TestConfig_Get(t *testing.T) {
 		t.Fail()
 	}
 
-	// 当是.的时候，返回默认section的key值
+	// 当是2个的时候，返回默认section的key值
 	res1, err := config.Get(`app.t_key`)
-	fmt.Printf("\n%s\n",res1.(*ini.Key).Value())
+	fmt.Printf("\n%s\n", res1.(*ini.Key).Value())
 	assert.Equal(t, `t_value`, res1.(*ini.Key).Value())
+
+	// 当是2个的，Key不存在时
+	_, err = config.Get(`app.ssssss`)
+	if err == nil {
+		t.Fail()
+	} else if v, ok := err.(*FormatError); !ok {
+		fmt.Printf("fail: error is %T",v)
+		t.Fail()
+	}
 
 	// 当是3个值的时候，返回指定section的key值
 	res2, err := config.Get(`app.t1.t2`)
-	fmt.Printf("\n%s\n",res2.(*ini.Key).Value())
+	fmt.Printf("\n%s\n", res2.(*ini.Key).Value())
 	assert.Equal(t, `t2_value`, res2.(*ini.Key).Value())
 
 	// 当是4个以上值的时候，返回指定section子section的key值
 	res3, err := config.Get(`new.nt.nt2.nt3`)
-	fmt.Printf("\n%s\n",res3.(*ini.Key).Value())
+	fmt.Printf("\n%s\n", res3.(*ini.Key).Value())
 	assert.Equal(t, `nt3_value`, res3.(*ini.Key).Value())
 
 	// 优先查找section的拼接
 	res4, err := config.Get(`new.nt.nt2`)
-	fmt.Printf("\n%T\n",res4)
-	if _,ok := res4.(*ini.Section); !ok {
+	fmt.Printf("\n%T\n", res4)
+	if _, ok := res4.(*ini.Section); !ok {
 		t.Fail()
 	}
 }
@@ -134,9 +156,9 @@ func TestConfig_GetDefault(t *testing.T) {
 	}
 
 	// 当一个值的时候，返回ini.File完整对象
-	res := config.GetDefault(`ssss`,`def`)
+	res := config.GetDefault(`ssss`, `def`)
 
-	assert.Equal(t,`def`,res.(string))
+	assert.Equal(t, `def`, res.(string))
 }
 
 func TestConfig_All(t *testing.T) {
@@ -146,7 +168,25 @@ func TestConfig_All(t *testing.T) {
 		t.Fail()
 	}
 
-	for _,v := range config.All() {
-		fmt.Printf("%v",v)
+	for _, v := range config.All() {
+		fmt.Printf("%v", v)
 	}
+}
+
+func TestConfig_Set_Key_Error(t *testing.T) {
+	config, err := NewConfig(directory)
+	if err != nil {
+		fmt.Printf("%s\n", err.Error())
+		t.Fail()
+	}
+
+	err = config.Set("app", "123")
+	if err == nil {
+		t.Fail()
+	}
+}
+
+func TestFormatError_Error(t *testing.T) {
+	err := &FormatError{message: "abcdef"}
+	assert.Equal(t, "abcdef", err.Error())
 }
