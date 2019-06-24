@@ -58,7 +58,7 @@ fmt.Println(value.(*ini.Key).Value())
 ### GetDefault
 Same as `Get`, but if the value accessed does not exist, the default value will be used instead of `err` to mask the error output.
 ```go
-value := config.Get("app.section.key", "default")
+value := config.GetDefault("app.section.key", "default")
 fmt.Println("%s",value)
 ```
 
